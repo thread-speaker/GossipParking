@@ -1,0 +1,22 @@
+{
+  "name": "462gossip",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thread-speaker/462gossip.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/thread-speaker/462gossip/issues"
+  },
+  "homepage": "https://github.com/thread-speaker/462gossip#readme",
+  "dependencies": {
+    "express": "^4.13.4"
+  }
+}
