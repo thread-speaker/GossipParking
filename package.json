@@ -18,6 +18,7 @@
   "homepage": "https://github.com/thread-speaker/462gossip#readme",
   "dependencies": {
     "body-parser": "^1.15.0",
-    "express": "^4.13.4"
+    "express": "^4.13.4",
+    "my-local-ip": "^1.0.0"
   }
 }

@@ -7,6 +7,7 @@
 		<h3>Say something</h3>
 		<form action="/" method="post">
 			Chat message:<br>
+			<input type="hidden" name="uid" value="{{userkey}}"><br />
 			<input type="hidden" name="user" value="{{username}}"><br />
 			<input type="text" name="chatMessage"><br />
 			<input type="submit" value="Submit">

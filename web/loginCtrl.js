@@ -27,6 +27,7 @@ app.controller('loginCtrl',
 					localStorage.userkey = user.key();
 				}
 				
+				localStorage.messagenumber = 0;
 				window.location="/";
 			});
 		}
