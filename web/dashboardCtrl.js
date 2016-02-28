@@ -7,6 +7,8 @@ app.controller('dashboardCtrl',["$scope",
 		}
 		else {
 			$scope.loggedin = true;
+			$scope.username = localStorage.username;
+			console.log("user is: " + $scope.username)
 		}
 	}
 ]);
