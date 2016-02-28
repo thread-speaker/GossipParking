@@ -12,9 +12,22 @@ function ServerState(endpoint) {
 }
 
 ServerState.prototype.connectTo = function(otherEndpoint) {
-	this.otherEndpoints.push(otherEndpoint);
+	var hasTarget = false;
+	for (i=0;i<this.otherEndpoints.length;i++) {
+		if (this.otherEndpoints[i]===otherEndpoint) {
+			hasTarget = true;
+			break;
+		}
+	}
+	
+	if (!hasTarget) {
+		this.otherEndpoints.push(otherEndpoint);
+	}
 };
 
+ServerState.prototype.mark = function(index, target) {
+	this.rumors[index].sentTo(target);
+}
 
 ServerState.prototype.addUserChat = function(id, username, text) {
 	var highest = 0;
@@ -28,28 +41,53 @@ ServerState.prototype.addUserChat = function(id, username, text) {
 	this.rumors.push(rumor);
 };
 
+ServerState.prototype.getRumor = function(rumorId, user, text) {
+	//Make sure things parse correctly before doing anything
+	if (rumorId) {
+		var id = rumorId.split(":")[0];
+		var number = rumorId.split(":")[1];
+		if (id && rumorId) {
+			const rumor = new Rumor.make(id,number,user,text,this.myEndpoint);
+			this.rumors.push(rumor);
+		}
+	}
+}
+
 ServerState.prototype.findSendableRumor = function() {
 	const that = this;
 	var result = null;
-
-	that.otherEndpoints.forEach(function(endpoint) {
-		that.rumors.forEach(function(rumor) {
-			if ( !rumor.hasSentTo(endpoint)) {
-				rumor.sentTo(endpoint);
-				const copiedRumor = rumor.cloneForSending(that.myEndpoint);
-				result = new SendableRumor.make(copiedRumor,endpoint);
+	
+	that.shuffleEndpoints().forEach(function(endpoint) {
+		if (!result) {
+			for (i=0;i<that.rumors.length;i++) {
+				var rumor = that.rumors[i];
+				if ( !rumor.hasSentTo(endpoint)) {
+					const copiedRumor = rumor.cloneForSending(that.myEndpoint);
+					result = new SendableRumor.make(i,copiedRumor,endpoint);
+					return;
+				}
 			}
-		})
+		}
 	});
 
 	return result;
 };
 
+ServerState.prototype.shuffleEndpoints = function() {
+	var array = this.otherEndpoints;
+	var currentIndex = array.length, temporaryValue, randomIndex;
 
+	// While there remain elements to shuffle...
+	while (0 !== currentIndex) {
+		// Pick a remaining element...
+		randomIndex = Math.floor(Math.random() * currentIndex);
+		currentIndex -= 1;
 
+		// And swap it with the current element.
+		temporaryValue = array[currentIndex];
+		array[currentIndex] = array[randomIndex];
+		array[randomIndex] = temporaryValue;
+	}
 
-
-
-
-
-
+	return array;
+}

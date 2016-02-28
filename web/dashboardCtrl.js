@@ -10,5 +10,12 @@ app.controller('dashboardCtrl',["$scope",
 			$scope.username = localStorage.username;
 			$scope.userkey = localStorage.userkey;
 		}
+		
+		$scope.refresh = function() {
+			$.ajax({url: "/rumors", success: function(result){
+				$("#display").html(result);
+			}});
+		};
+		$scope.refresh();
 	}
 ]);

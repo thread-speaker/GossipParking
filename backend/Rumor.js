@@ -19,6 +19,18 @@ Rumor.prototype.getNumber = function() {
 	return this.messageNumber;
 }
 
+Rumor.prototype.getEndpoint = function() {
+	return this.endpoint;
+}
+
+Rumor.prototype.getMessageId = function() {
+	return this.messageID;
+}
+
+Rumor.prototype.getText = function() {
+	return this.text;
+}
+
 Rumor.prototype.hasSentTo = function(endpoint) {
 	var result = false;
 
