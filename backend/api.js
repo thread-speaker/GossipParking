@@ -15,9 +15,9 @@ app.use(bodyParser.urlencoded({
 app.post('/', function (req, res) {
 	if (req.body) {
 		if (req.body.Rumor) { //Incoming rumor
-			var MessageID = req.body.MessageID;
-			var Originator = req.body.Originator;
-			var Text = req.body.Text;
+			var MessageID = req.body.Rumor.MessageID;
+			var Originator = req.body.Rumor.Originator;
+			var Text = req.body.Rumor.Text;
 			
 			serverState.getRumor(MessageID,Originator,Text);
 			serverState.connectTo(req.body.EndPoint);
@@ -25,7 +25,12 @@ app.post('/', function (req, res) {
 			res.json({ok: true});
 		}
 		else if (req.body.Want) { //Incoming want
-			//currently do nothing
+			var wants = req.body.Want;
+			for (var key in wants) {
+				if (!wants.hasOwnProperty(key)) continue;
+				var number = wants[key];
+				serverState.unmark(key, number, req.body.EndPoint);
+			}
 		}
 		else if (req.body.chatMessage) { //User typed a message
 			var uid = req.body.uid;

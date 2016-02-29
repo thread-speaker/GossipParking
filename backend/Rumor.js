@@ -15,6 +15,10 @@ Rumor.prototype.getOriginator = function() {
 	return this.originator;
 }
 
+Rumor.prototype.getUserId = function() {
+	return this.userId;
+}
+
 Rumor.prototype.getNumber = function() {
 	return this.messageNumber;
 }
@@ -46,6 +50,13 @@ Rumor.prototype.hasSentTo = function(endpoint) {
 Rumor.prototype.sentTo = function(endpoint) {
 	if ( !this.hasSentTo(endpoint)) {
 		this.endpointsSentTo.push(endpoint);
+	}
+};
+
+Rumor.prototype.unmark = function(target) {
+	var index = endpointsSentTo.indexOf(target);
+	if (index > -1) {
+		target.splice(index, 1);
 	}
 };
 

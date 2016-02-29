@@ -29,6 +29,15 @@ ServerState.prototype.mark = function(index, target) {
 	this.rumors[index].sentTo(target);
 }
 
+ServerState.prototype.unmark = function(id, number, target) {
+	const that = this;
+	that.rumours.forEach(function(rumor) {
+		if (rumor.getUserId() === id && rumor.getNumber() === number) {
+			rumor.unmark(target);
+		}
+	});
+}
+
 ServerState.prototype.addUserChat = function(id, username, text) {
 	var highest = 0;
 	for (i = 0; i < this.rumors.length; i++) {
@@ -47,8 +56,17 @@ ServerState.prototype.getRumor = function(rumorId, user, text) {
 		var id = rumorId.split(":")[0];
 		var number = rumorId.split(":")[1];
 		if (id && rumorId) {
-			const rumor = new Rumor.make(id,number,user,text,this.myEndpoint);
-			this.rumors.push(rumor);
+			var found = false;
+			this.rumors.forEach(function(rumor) {
+				if (rumor.getMessageId() === rumorId) {
+					found = true;
+				}
+			});
+			
+			if (!found) {
+				const rumor = new Rumor.make(id,number,user,text,this.myEndpoint);
+				this.rumors.push(rumor);
+			}
 		}
 	}
 }
