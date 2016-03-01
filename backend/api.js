@@ -26,7 +26,6 @@ app.post('/', function (req, res) {
 			res.json({ok: true});
 		}
 		else if (req.body.Want) { //Incoming want
-			console.log(req.body);
 			var wants = req.body.Want;
 			for (var key in wants) {
 				if (!wants.hasOwnProperty(key)) continue;
