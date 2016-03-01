@@ -4,6 +4,7 @@ var request = require("request");
 const port = parseInt(process.argv[2]) || 3000;
 const localIP = require('my-local-ip')();
 const serverState = require('./State').createEmptyServerState("http://"+localIP+":"+port+"/");
+var requestType = 0;
 
 // setup body parser
 var bodyParser = require('body-parser');
@@ -25,12 +26,15 @@ app.post('/', function (req, res) {
 			res.json({ok: true});
 		}
 		else if (req.body.Want) { //Incoming want
+			console.log(req.body);
 			var wants = req.body.Want;
 			for (var key in wants) {
 				if (!wants.hasOwnProperty(key)) continue;
 				var number = wants[key];
 				serverState.unmark(key, number, req.body.EndPoint);
 			}
+			
+			res.json({ok: true});
 		}
 		else if (req.body.chatMessage) { //User typed a message
 			var uid = req.body.uid;
@@ -75,7 +79,19 @@ app.get('/rumors', function (req, res) {
 	res.send(stringResult);
 });
 
-function backgroundSendRumorThread() {
+function backgroundThread() {
+	if (requestType == 0) {
+		requestType = 1;
+		sendRumor();
+	}
+	else {
+		requestType = 0;
+		findWants();
+	}
+}
+setInterval(backgroundThread,1000);
+
+function sendRumor() {
 	const sendableRumor = serverState.findSendableRumor();
 	if ( sendableRumor ) {
 		request(
@@ -92,4 +108,20 @@ function backgroundSendRumorThread() {
 		);
 	}
 }
-setInterval(backgroundSendRumorThread,1000);
+
+function findWants() {
+	const wants = serverState.findWants();
+	if (wants.target && wants.want && wants.want.Want) {
+		request(
+			{
+				uri: wants.target,
+				method: "POST",
+				json: true,
+				form: wants.want,
+			},
+			function(error, response, body) {
+				//Do nothing
+			}
+		);
+	}
+}

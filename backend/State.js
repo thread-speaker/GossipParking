@@ -31,8 +31,8 @@ ServerState.prototype.mark = function(index, target) {
 
 ServerState.prototype.unmark = function(id, number, target) {
 	const that = this;
-	that.rumours.forEach(function(rumor) {
-		if (rumor.getUserId() === id && rumor.getNumber() === number) {
+	that.rumors.forEach(function(rumor) {
+		if (rumor.getUserId() === id && parseInt(rumor.getNumber()) > number) {
 			rumor.unmark(target);
 		}
 	});
@@ -89,6 +89,38 @@ ServerState.prototype.findSendableRumor = function() {
 	});
 
 	return result;
+};
+
+ServerState.prototype.findWants = function() {
+	//Sort all known rumors
+	this.rumors.sort(function(a, b){
+		if (a.getUserId() < b.getUserId()) return -1;
+		else if (a.getUserId() > b.getUserId()) return 1;
+		else if (parseInt(a.getNumber()) < parseInt(b.getNumber())) return -1;
+		else if (parseInt(a.getNumber()) > parseInt(b.getNumber())) return 1;
+		return 0;
+	});
+	
+	//Generate wants
+	var currentUser = "";
+	var wants = {};
+	this.rumors.forEach(function(rumor) {
+		if (rumor.getUserId() !== currentUser) {
+			currentUser = rumor.getUserId();
+			wants[currentUser] = parseInt(rumor.getNumber());
+		}
+		else {
+			const number = parseInt(rumor.getNumber());
+			if (wants[currentUser] < number) wants[currentUser] = number;
+		}
+	});
+	const want = {Want:wants,EndPoint:this.myEndpoint};
+	
+	//Return wants + target
+	return {
+		want: want,
+		target: this.shuffleEndpoints()[0]
+	};
 };
 
 ServerState.prototype.shuffleEndpoints = function() {

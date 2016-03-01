@@ -54,9 +54,9 @@ Rumor.prototype.sentTo = function(endpoint) {
 };
 
 Rumor.prototype.unmark = function(target) {
-	var index = endpointsSentTo.indexOf(target);
+	var index = this.endpointsSentTo.indexOf(target);
 	if (index > -1) {
-		target.splice(index, 1);
+		this.endpointsSentTo.splice(index, 1);
 	}
 };
 
