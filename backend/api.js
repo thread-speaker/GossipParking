@@ -1,6 +1,17 @@
 var app = require('./express.js');
 var request = require("request");
 
+/*var localIP;
+var getIP = require('external-ip')();
+getIP(function (err, ip) {
+	if (err) {
+		localIP = require('my-local-ip')();
+	}
+	else {
+		localIP = ip;
+	}
+});*/
+
 const port = parseInt(process.argv[2]) || 3000;
 const localIP = require('my-local-ip')();
 const serverState = require('./State').createEmptyServerState("http://"+localIP+":"+port+"/");
@@ -48,7 +59,9 @@ app.post('/', function (req, res) {
 		}
 		else if (req.body.url) { //User connected a node
 			var url = req.body.url;
-			serverState.connectTo(url);
+			if (url.toLowerCase().indexOf("http") == 0) {
+				serverState.connectTo(url);
+			}
 			
 			res.redirect('/');
 		}
