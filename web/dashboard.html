@@ -4,27 +4,22 @@
 	</div>
 	<br />
 	<div>
-		<h3>Say something</h3>
+		<h3>Add a new lot</h3>
 		<form action="/" method="post">
-			Chat message:<br>
-			<input type="hidden" name="uid" value="{{userkey}}"><br />
-			<input type="hidden" name="user" value="{{username}}"><br />
-			<input type="text" name="chatMessage"><br />
-			<input type="submit" value="Submit">
+			Location: &nbsp; <input type="text" name="lotLocation" /><br />
+			Y Permit Capacity: &nbsp; <input type="text" /><br />
+			G Permit Capacity: &nbsp; <input type="text" /><br />
+			A Permit Capacity: &nbsp; <input type="text" /><br />
+			Permit required start time ("x am" / "x pm"): &nbsp; <input type="text" /><br />
+			Permit required end time ("x am" / "x pm"): &nbsp; <input type="text" /><br />
+
+			<input type="button" value="Connect Twitter Account" ng-click="connectTwitter()">
+			<span ng-if="twitterConnected" class="glyphicon-ok" style="height: 15px; color: green"></span>
+
+			<br/><br/>
+			<input type="submit" value="Submit" />
+			<input type="hidden" name="uid" value="{{userkey}}" />
+			<input type="hidden" name="user" value="{{username}}" />
 		</form>
 	</div>
-	<br />
-	<button ng-click="refresh()">Refresh</button>
-	<div id="display">
-		<p>no rumors currently known</p>
-	</div>
-	<br />
-	<hr />
-	<br />
-	<h3>Connect to another chat server node</h3>
-	<form action="/" method="post">
-		Chat server URL:<br>
-		<input type="text" name="url"><br>
-		<input type="submit" value="Submit">
-	</form>
 </div>

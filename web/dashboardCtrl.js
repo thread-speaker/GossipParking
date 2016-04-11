@@ -1,4 +1,4 @@
-var app = angular.module('gossipChat');
+var app = angular.module('parkingGossip');
 
 app.controller('dashboardCtrl',["$scope",
 	function($scope) {
