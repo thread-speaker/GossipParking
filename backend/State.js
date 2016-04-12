@@ -67,6 +67,21 @@ ServerState.prototype.decACars = function () {
 	this.cars.a--;
 };
 
+ServerState.prototype.getAvailibility = function () {
+	var spaces = {};
+	if (this.info.yCap) {
+		spaces.y = this.info.yCap - this.cars.y;
+	}
+	if (this.ingo.gCap) {
+		spaces.g = this.info.gCap - this.cars.g;
+	}
+	if (this.info.aCap) {
+		spaces.a = this.info.aCap - this.cars.a;
+	}
+	
+	return JSON.stringify(spaces);
+}
+
 ServerState.prototype.mark = function(index, target) {
 	this.rumors[index].sentTo(target);
 };

@@ -53,6 +53,7 @@ app.post('/car/entered', function(req, res) {
 			res.json({ok: false});
 	}
 	
+	updateState();
 	res.json({ok: true});
 });
 
@@ -76,6 +77,7 @@ app.post('/car/exited', function(req, res) {
 			res.json({ok: false});
 	}
 	
+	updateState();
 	res.json({ok: true});
 });
 
@@ -84,7 +86,7 @@ app.post('/', function (req, res) {
 		if (req.body.Rumor) { //Incoming rumor
 			var MessageID = req.body.Rumor.MessageID;
 			var Originator = req.body.Rumor.Originator;
-			var Text = req.body.Rumor.Text;
+			var Text = req.body.Rumor.Text; //Text will be a stringified JSON of lot availibility for different types
 			
 			serverState.getRumor(MessageID,Originator,Text);
 			serverState.connectTo(req.body.EndPoint);
@@ -101,16 +103,6 @@ app.post('/', function (req, res) {
 			
 			res.json({ok: true});
 		}
-		/*else if (req.body.chatMessage) { //User typed a message
-			var uid = req.body.uid;
-			var user = req.body.user;
-			var message = req.body.chatMessage;
-			if (uid && user && message) {
-				serverState.addUserChat(uid, user, message);
-			}
-			
-			res.redirect('/');
-		}*/
 		else if (req.body.url) { //User connected a node
 			var url = req.body.url;
 			if (url.toLowerCase().indexOf("http") == 0) {
@@ -145,6 +137,15 @@ app.get('/rumors', function (req, res) {
 	
 	res.send(stringResult);
 });
+
+function updateState() {
+	var uid = serverState.getInfo().lotLocation;
+	var user = serverState.getInfo().lotLocation;
+	var message = serverState.getAvailibility();
+	if (uid && user && message) {
+		serverState.addUserChat(uid, user, message);
+	}
+}
 
 function backgroundThread() {
 	if (requestType == 0) {
