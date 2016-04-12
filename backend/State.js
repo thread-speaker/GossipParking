@@ -15,6 +15,8 @@ function ServerState(endpoint) {
 		g: 0,
 		a: 0
 	};
+	this.TwitterKey = "OURC1agK5sbxfoJ7YgzPCYvRD";
+	this.TwitterSecret = "iOpigIpYlCtx0JoHdDDfTUCSqiyynXehonRfaaNNz4GMGFrfO1";
 }
 
 ServerState.prototype.connectTo = function(otherEndpoint) {

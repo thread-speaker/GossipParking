@@ -34,13 +34,13 @@ app.controller('dashboardCtrl',["$scope",
 				
 				//data contains all the information from the input fields.
 				//Connect to Twitter (uncomment below and fill in once the OAuth api is worked out)
-				//$.ajax({
-				//	url: "...",
-				//	type: "...",
-				//	data: "...",
-				//	success: function (twitterResult) {
-				//		//Get OAuth codes or whatever else, and save everything to data.
-				//		//data["OAuth"] = "yadda";
+				$.ajax({
+					url: "https://api.twitter.com/oauth2/token",
+					type: "...",
+					data: "...",
+					success: function (twitterResult) {
+						//Get OAuth codes or whatever else, and save everything to data.
+						//data["OAuth"] = "yadda";
 					
 						//Save to the server's state
 						$.ajax({
@@ -51,8 +51,8 @@ app.controller('dashboardCtrl',["$scope",
 								console.log(result);
 							}
 						});
-				//	}
-				//});
+					}
+				});
 			}
 		}
 	}
