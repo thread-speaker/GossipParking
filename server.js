@@ -5,6 +5,7 @@ var http = require('http');
 var https = require('https');
 
 const port = parseInt(process.argv[2]) || 3000;
+const sport = parseInt(process.argv[3]) || 5001;
 
 http.createServer(app).listen(port, function () {
 	var host = this.address().address;
@@ -18,8 +19,8 @@ const options = {
 	cert: fs.readFileSync('./cert.pem')
 }
 
-https.createServer(options, app).listen(443, function () {
+https.createServer(options, app).listen(sport, function () {
 	var host = this.address().address;
 	var port = this.address().port;
-	console.log("https listening on port 443");  
+	console.log("https listening on port " + sport);  
 });
