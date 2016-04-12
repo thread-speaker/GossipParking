@@ -24,6 +24,61 @@ app.use(bodyParser.urlencoded({
 	extended: true
 }));
 
+app.post('/setsettings', function(req, res) {
+	console.log(req.body);
+	
+	//Save any state information here
+	serverState.setInfo(req.body);
+	
+	res.json({ok: true});
+});
+
+app.post('/car/entered', function(req, res) {
+	var type = "y";
+	if (req.body && req.body.type) {
+		type = req.body.type;
+	}
+	
+	switch (type) {
+		case "y":
+			serverState.incYCars();
+			break;
+		case "g":
+			serverState.incGCars();
+			break;
+		case "a":
+			serverState.incACars();
+			break;
+		default:
+			res.json({ok: false});
+	}
+	
+	res.json({ok: true});
+});
+
+app.post('/car/exited', function(req, res) {
+	var type = "y";
+	if (req.body && req.body.type) {
+		type = req.body.type;
+	}
+	
+	switch (type) {
+		case "y":
+			serverState.decYCars();
+			break;
+		case "g":
+			serverState.decGCars();
+			break;
+		case "a":
+			serverState.decACars();
+			break;
+		default:
+			res.json({ok: false});
+	}
+	
+	res.json({ok: true});
+});
+
 app.post('/', function (req, res) {
 	if (req.body) {
 		if (req.body.Rumor) { //Incoming rumor
@@ -46,7 +101,7 @@ app.post('/', function (req, res) {
 			
 			res.json({ok: true});
 		}
-		else if (req.body.chatMessage) { //User typed a message
+		/*else if (req.body.chatMessage) { //User typed a message
 			var uid = req.body.uid;
 			var user = req.body.user;
 			var message = req.body.chatMessage;
@@ -55,7 +110,7 @@ app.post('/', function (req, res) {
 			}
 			
 			res.redirect('/');
-		}
+		}*/
 		else if (req.body.url) { //User connected a node
 			var url = req.body.url;
 			if (url.toLowerCase().indexOf("http") == 0) {

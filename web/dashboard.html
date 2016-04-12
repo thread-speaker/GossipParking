@@ -5,21 +5,28 @@
 	<br />
 	<div>
 		<h3>Add a new lot</h3>
-		<form action="/" method="post">
-			Location: &nbsp; <input type="text" name="lotLocation" /><br />
-			Y Permit Capacity: &nbsp; <input type="text" /><br />
-			G Permit Capacity: &nbsp; <input type="text" /><br />
-			A Permit Capacity: &nbsp; <input type="text" /><br />
-			Permit required start time ("x am" / "x pm"): &nbsp; <input type="text" /><br />
-			Permit required end time ("x am" / "x pm"): &nbsp; <input type="text" /><br />
+		Location: &nbsp; <input type="text" name="lotLocation" ng-model="lotLocation" /><br />
+		Y Permit Capacity: &nbsp; <input type="text" ng-model="yCap" /><br />
+		G Permit Capacity: &nbsp; <input type="text" ng-model="gCap" /><br />
+		A Permit Capacity: &nbsp; <input type="text" ng-model="aCap" /><br />
+		Permit required start time ("x am" / "x pm"): &nbsp; <input type="text" ng-model="startTime" /><br />
+		Permit required end time ("x am" / "x pm"): &nbsp; <input type="text" ng-model="endTime" /><br />
 
-			<input type="button" value="Connect Twitter Account" ng-click="connectTwitter()">
-			<span ng-if="twitterConnected" class="glyphicon-ok" style="height: 15px; color: green"></span>
-
-			<br/><br/>
-			<input type="submit" value="Submit" />
-			<input type="hidden" name="uid" value="{{userkey}}" />
-			<input type="hidden" name="user" value="{{username}}" />
-		</form>
+		<input
+			type="button"
+			value="Connect Twitter Account"
+			ng-click="connectTwitter(lotLocation,yCap,gCap,aCap,startTime,endTime)"
+		/>
+		<span ng-if="twitterConnected" class="glyphicon-ok" style="height: 15px; color: green"></span>
 	</div>
+	<h4 ng-click="toggleConnect()">
+		Connect to another lot
+		<span ng-show="connectHidden()">+</span>
+		<span ng-hide="connectHidden()">-</span>
+	</h4>
+	<form action="/" method="post" ng-hide="connectHidden()">
+		Chat server URL:<br>
+		<input type="text" name="url"><br>
+		<input type="submit" value="Submit">
+	</form>
 </div>

@@ -9,6 +9,12 @@ function ServerState(endpoint) {
 	this.rumors = [];
 	this.myEndpoint = endpoint;
 	this.otherEndpoints = [];
+	this.info = {};
+	this.cars = {
+		y: 0,
+		g: 0,
+		a: 0
+	};
 }
 
 ServerState.prototype.connectTo = function(otherEndpoint) {
@@ -25,9 +31,45 @@ ServerState.prototype.connectTo = function(otherEndpoint) {
 	}
 };
 
+ServerState.prototype.getInfo = function () {
+	return this.info;
+};
+
+ServerState.prototype.setInfo = function (info) {
+	this.info = info;
+};
+
+ServerState.prototype.getCars = function () {
+	return this.cars;
+};
+
+ServerState.prototype.addYCars = function () {
+	this.cars.y++;
+};
+
+ServerState.prototype.addGCars = function () {
+	this.cars.g++;
+};
+
+ServerState.prototype.addACars = function () {
+	this.cars.a++;
+};
+
+ServerState.prototype.decYCars = function () {
+	this.cars.y--;
+};
+
+ServerState.prototype.decGCars = function () {
+	this.cars.g--;
+};
+
+ServerState.prototype.decACars = function () {
+	this.cars.a--;
+};
+
 ServerState.prototype.mark = function(index, target) {
 	this.rumors[index].sentTo(target);
-}
+};
 
 ServerState.prototype.unmark = function(id, number, target) {
 	const that = this;
@@ -36,7 +78,7 @@ ServerState.prototype.unmark = function(id, number, target) {
 			rumor.unmark(target);
 		}
 	});
-}
+};
 
 ServerState.prototype.addUserChat = function(id, username, text) {
 	var highest = 0;
@@ -69,7 +111,7 @@ ServerState.prototype.getRumor = function(rumorId, user, text) {
 			}
 		}
 	}
-}
+};
 
 ServerState.prototype.findSendableRumor = function() {
 	const that = this;
@@ -140,4 +182,4 @@ ServerState.prototype.shuffleEndpoints = function() {
 	}
 
 	return array;
-}
+};

@@ -7,15 +7,53 @@ app.controller('dashboardCtrl',["$scope",
 		}
 		else {
 			$scope.loggedin = true;
-			$scope.username = localStorage.username;
-			$scope.userkey = localStorage.userkey;
-		}
+			$scope.lotLocation ="a"
+			$scope.yCap = "b"
+			$scope.gCap = "c"
+			$scope.aCap = "d"
+			$scope.startTime = "e"
+			$scope.endTime = "f"
+			
+			$scope.collapsed = true;
+			$scope.connectHidden = function() {
+				return $scope.collapsed;
+			}
+			$scope.toggleConnect = function() {
+				$scope.collapsed = !$scope.collapsed;
+			}
 		
-		$scope.refresh = function() {
-			$.ajax({url: "/rumors", success: function(result){
-				$("#display").html(result);
-			}});
-		};
-		$scope.refresh();
+			$scope.connectTwitter = function (lotLocation, yCap, gCap, aCap, startTime, endTime) {
+				var data = {
+					lotLocation: $scope.lotLocation,
+					yCap: $scope.yCap,
+					gCap: $scope.gCap,
+					aCap: $scope.aCap,
+					startTime: $scope.startTime,
+					endTime: $scope.endTime
+				};
+				
+				//data contains all the information from the input fields.
+				//Connect to Twitter (uncomment below and fill in once the OAuth api is worked out)
+				//$.ajax({
+				//	url: "...",
+				//	type: "...",
+				//	data: "...",
+				//	success: function (twitterResult) {
+				//		//Get OAuth codes or whatever else, and save everything to data.
+				//		//data["OAuth"] = "yadda";
+					
+						//Save to the server's state
+						$.ajax({
+							url: '/setsettings',
+							type: "POST",
+							data: data,
+							success: function(result){
+								console.log(result);
+							}
+						});
+				//	}
+				//});
+			}
+		}
 	}
 ]);
