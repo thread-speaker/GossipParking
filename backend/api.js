@@ -138,6 +138,11 @@ app.get('/rumors', function (req, res) {
 	res.send(stringResult);
 });
 
+app.get('/base64Key', function(req, res) {
+	res.send(serverState.getBase64Token());
+});
+
+
 function updateState() {
 	var uid = serverState.getInfo().lotLocation;
 	var user = serverState.getInfo().lotLocation;

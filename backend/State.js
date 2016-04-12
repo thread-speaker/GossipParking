@@ -11,9 +11,7 @@ function ServerState(endpoint) {
 	this.otherEndpoints = [];
 	this.info = {};
 	this.cars = {
-		y: 0,
-		g: 0,
-		a: 0
+		y: 0
 	};
 	this.TwitterKey = "OURC1agK5sbxfoJ7YgzPCYvRD";
 	this.TwitterSecret = "iOpigIpYlCtx0JoHdDDfTUCSqiyynXehonRfaaNNz4GMGFrfO1";
@@ -82,6 +80,18 @@ ServerState.prototype.getAvailibility = function () {
 	}
 	
 	return JSON.stringify(spaces);
+}
+
+ServerState.prototype.getKey = function() {
+	return this.TwitterKey;
+}
+
+ServerState.prototype.getSecret = function() {
+	return this.TwitterSecret;
+}
+
+ServerState.prototype.getBase64Token = function() {
+	return atob(this.TwitterKey + ":" + this.TwitterSecret);
 }
 
 ServerState.prototype.mark = function(index, target) {
