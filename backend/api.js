@@ -1,200 +1,197 @@
 var app = require('./express.js');
 var request = require("request");
+var argv = require('minimist')(process.argv.slice(2));
+var TwitterBot = require("node-twitterbot").TwitterBot;
 
-/*var localIP;
-var getIP = require('external-ip')();
-getIP(function (err, ip) {
-	if (err) {
-		localIP = require('my-local-ip')();
-	}
-	else {
-		localIP = ip;
-	}
-});*/
-
-const port = parseInt(process.argv[2]) || 3000;
-const localIP = require('my-local-ip')();
-const serverState = require('./State').createEmptyServerState("http://"+localIP+":"+port+"/");
-var requestType = 0;
-
-// setup body parser
-var bodyParser = require('body-parser');
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({
-	extended: true
-}));
-
-app.post('/setsettings', function(req, res) {
-	console.log(req.body);
-	
-	//Save any state information here
-	serverState.setInfo(req.body);
-	
-	res.json({ok: true});
+const readline = require('readline');
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
 });
 
-app.post('/car/entered', function(req, res) {
-	var type = "y";
-	if (req.body && req.body.type) {
-		type = req.body.type;
-	}
-	
-	switch (type) {
-		case "y":
-			serverState.incYCars();
-			break;
-		case "g":
-			serverState.incGCars();
-			break;
-		case "a":
-			serverState.incACars();
-			break;
-		default:
-			res.json({ok: false});
-	}
-	
-	updateState();
-	res.json({ok: true});
-});
+var fs = require('fs');
+debugger;
 
-app.post('/car/exited', function(req, res) {
-	var type = "y";
-	if (req.body && req.body.type) {
-		type = req.body.type;
+var config;
+try{
+	config = JSON.parse(fs.readFileSync(argv.c, 'utf8'));
+}
+catch (e) {
+	config = null;
+}
+
+runServer(config);
+
+function runServer(conf) {
+	if(!conf) {
+		console.log("Config file invalid, using defualt configuration");
+		config = {
+			location: "800n500eProvo",
+			capacity: 100,
+			consKey: "yGzqNWxj8ztyBQH8GNGrytCmZ",
+			consSecret: "DDMEINP3IeKhD0WMoeIJA21LzqW2JHO1DqTwS5f2hSKAbD3AOj",
+			accessKey: "719635905661812736-o91JKSQXFzWKQJYp30OEjcsARweRW44",
+			accessSecret: "MiMJbRVl2tx3Poo2NNwcXAPI85TpIiIEpHtnBoXPCCEq9"
+		}; 
 	}
 	
-	switch (type) {
-		case "y":
-			serverState.decYCars();
-			break;
-		case "g":
-			serverState.decGCars();
-			break;
-		case "a":
-			serverState.decACars();
-			break;
-		default:
-			res.json({ok: false});
-	}
-	
-	updateState();
-	res.json({ok: true});
-});
+	var location = config.location;
+	var capacity = config.capacity;
+	var consKey = config.consKey;
+	var consSecret = config.consSecret;
+	var accessKey = config.accessKey;
+	var accessSecret = config.accessSecret;
 
-app.post('/', function (req, res) {
-	if (req.body) {
-		if (req.body.Rumor) { //Incoming rumor
-			var MessageID = req.body.Rumor.MessageID;
-			var Originator = req.body.Rumor.Originator;
-			var Text = req.body.Rumor.Text; //Text will be a stringified JSON of lot availibility for different types
-			
-			serverState.getRumor(MessageID,Originator,Text);
-			serverState.connectTo(req.body.EndPoint);
-			
-			res.json({ok: true});
-		}
-		else if (req.body.Want) { //Incoming want
-			var wants = req.body.Want;
-			for (var key in wants) {
-				if (!wants.hasOwnProperty(key)) continue;
-				var number = wants[key];
-				serverState.unmark(key, number, req.body.EndPoint);
-			}
-			
-			res.json({ok: true});
-		}
-		else if (req.body.url) { //User connected a node
-			var url = req.body.url;
-			if (url.toLowerCase().indexOf("http") == 0) {
-				serverState.connectTo(url);
-			}
-			
-			res.redirect('/');
-		}
-	}
-	else {
-		res.redirect('/');
-	}
-});
-
-app.get('/rumors', function (req, res) {
-	var result = {};
-	serverState.rumors.forEach(function(rumor) {
-		result[rumor.getOriginator()] = result[rumor.getOriginator()] || [];
-		result[rumor.getOriginator()].push(rumor);
+	debugger;
+	var Bot = new TwitterBot({
+		"consumer_secret": consSecret,
+		"consumer_key": consKey,
+		"access_token": accessKey,
+		"access_token_secret": accessSecret
 	});
-	
-	var stringResult = "";
-	for (var key in result) {
-		// skip loop if the property is from prototype
-		if (!result.hasOwnProperty(key)) continue;
+
+	//Bot.tweet("I'm on the interwebs!");
+
+	const port = parseInt(process.argv[2]) || 3000;
+	const localIP = require('my-local-ip')();
+	debugger;
+	const serverState = require('./State').createEmptyServerState("http://"+localIP+":"+port+"/", Bot, location, capacity);
+	var requestType = 0;
+
+	// setup body parser
+	var bodyParser = require('body-parser');
+	app.use(bodyParser.json());
+	app.use(bodyParser.urlencoded({
+		extended: true
+	}));
+
+	app.post('/car/entered', function(req, res) {
+		serverState.addCar();
 		
-		stringResult += "<h3>" + key + "</h3>";
-		result[key].forEach(function(rumor) {
-			stringResult += "<p>" + rumor.getText() + "</p>";
+		updateState();
+		res.json({ok: true});
+	});
+
+	app.post('/car/exited', function(req, res) {
+		serverState.removeCar();
+		
+		updateState();
+		res.json({ok: true});
+	});
+
+	app.post('/', function (req, res) {
+		if (req.body) {
+			if (req.body.url) { //User connected a node
+				var url = req.body.url;
+				if (url.toLowerCase().indexOf("http") == 0) {
+					serverState.connectTo(url);
+				}
+			}
+		}
+		res.redirect('/');
+	});
+
+	app.get('/rumors', function (req, res) {
+		var result = {};
+		serverState.rumors.forEach(function(rumor) {
+			result[rumor.getOriginator()] = result[rumor.getOriginator()] || [];
+			result[rumor.getOriginator()].push(rumor);
 		});
+		
+		var stringResult = "";
+		for (var key in result) {
+			// skip loop if the property is from prototype
+			if (!result.hasOwnProperty(key)) continue;
+			
+			stringResult += "<h3>" + key + "</h3>";
+			result[key].forEach(function(rumor) {
+				stringResult += "<p>" + rumor.getText() + "</p>";
+			});
+		}
+		
+		res.send(stringResult);
+	});
+
+	function updateState() {
+		var uid = serverState.getLocation();
+		var user = serverState.getLocation();
+		var message = serverState.getAvailibility();
+		if (uid && user && message) {
+			serverState.updateRumor(uid, user, message);
+		}
+	}
+
+	function maybeTweet() {
+		serverState.updateStatus();
+	}
+	setInterval(maybeTweet, 10000);
+
+	function backgroundThread() {
+		sendRumor();
+	}
+	setInterval(backgroundThread,1000);
+
+	function sendRumor() {
+		const sendableRumor = serverState.findSendableRumor();
+		if ( sendableRumor ) {
+			request(
+				{
+					uri: sendableRumor.getTarget(),
+					method: "POST",
+					form: sendableRumor.format(),
+				},
+				function(error, response, body) {
+					if (!error) {
+						serverState.mark(sendableRumor.getRumorIndex(), sendableRumor.getTarget());
+					}
+				}
+			);
+		}
 	}
 	
-	res.send(stringResult);
-});
+}
 
-app.get('/base64Key', function(req, res) {
+
+
+/* ------------------ DEPRECATED --------------------- */
+
+
+/* 	app.get('/base64Token', function(req, res) {
 	res.send(serverState.getBase64Token());
 });
 
+app.post('/connectTwitter', function(req, res) {
+	if(req.body)
+		serverState.setInfo(req.body);
 
-function updateState() {
-	var uid = serverState.getInfo().lotLocation;
-	var user = serverState.getInfo().lotLocation;
-	var message = serverState.getAvailibility();
-	if (uid && user && message) {
-		serverState.addUserChat(uid, user, message);
-	}
-}
+	var url = "https://api.twitter.com/oauth2/token";
+	var type = "POST";
+	var contentType = "application/x-www-form-urlencoded;charset=UTF-8";
+	var base64Token = serverState.getBase64Token();	
+	var authorization = "Basic " + base64Token;
+	var oauthData = {grant_type: "client_credentials"};
 
-function backgroundThread() {
-	if (requestType == 0) {
-		requestType = 1;
-		sendRumor();
-	}
-	else {
-		requestType = 0;
-		findWants();
-	}
-}
-setInterval(backgroundThread,1000);
-
-function sendRumor() {
-	const sendableRumor = serverState.findSendableRumor();
-	if ( sendableRumor ) {
-		request(
-			{
-				uri: sendableRumor.getTarget(),
-				method: "POST",
-				form: sendableRumor.format(),
+	request(
+		{
+			uri: url,
+			method: type,
+			headers: {
+				'Authorization' : authorization,
+				'Content-Type' : contentType
 			},
-			function(error, response, body) {
-				if (!error) {
-					serverState.mark(sendableRumor.getRumorIndex(), sendableRumor.getTarget());
-				}
+			form: oauthData,
+		},
+		function(error, response, body) {
+			if (!error) {
+				serverState.setAccessToken(JSON.parse(body).access_token);
+				res.json({ok: true});
 			}
-		);
-	}
-}
+			else {
+				console.log(response);
+				res.json({ok: false});
+			}
+		}
+	);
+});
+*/
 
-function findWants() {
-	const wants = serverState.findWants();
-	if (wants.target && wants.want && wants.want.Want) {
-		request(
-			{
-				uri: wants.target,
-				method: "POST",
-				json: true,
-				form: wants.want,
-			},
-			function(error, response, body) {
-				//Do nothing
-			}
-		);
-	}
-}

@@ -1,20 +1,24 @@
 const Rumor = require('./Rumor');
 const SendableRumor = require('./SendableRumor');
 
-exports.createEmptyServerState = function(endpoint) {
-	return new ServerState(endpoint);
+exports.createEmptyServerState = function(endpoint, Bot, location, capacity) {
+	return new ServerState(endpoint, Bot, location, capacity);
 };
 
-function ServerState(endpoint) {
+function ServerState(endpoint, Bot, location, capacity) {
+	debugger;
 	this.rumors = [];
 	this.myEndpoint = endpoint;
 	this.otherEndpoints = [];
-	this.info = {};
-	this.cars = {
-		y: 0
-	};
-	this.TwitterKey = "OURC1agK5sbxfoJ7YgzPCYvRD";
-	this.TwitterSecret = "iOpigIpYlCtx0JoHdDDfTUCSqiyynXehonRfaaNNz4GMGFrfO1";
+	this.neighbors = [];
+	this.location = location,
+	this.capacity = capacity,
+	this.lastAvailability = capacity
+	
+	this.cars = 0;
+	this.Bot = Bot;
+	
+	this.myRumor = new Rumor.make(location,0,location,capacity,endpoint);
 }
 
 ServerState.prototype.connectTo = function(otherEndpoint) {
@@ -31,110 +35,104 @@ ServerState.prototype.connectTo = function(otherEndpoint) {
 	}
 };
 
-ServerState.prototype.getInfo = function () {
-	return this.info;
-};
-
-ServerState.prototype.setInfo = function (info) {
-	this.info = info;
-};
-
 ServerState.prototype.getCars = function () {
 	return this.cars;
 };
 
-ServerState.prototype.addYCars = function () {
-	this.cars.y++;
+ServerState.prototype.addCar = function () {
+	console.log("Car entered");
+	this.cars++;
 };
 
-ServerState.prototype.addGCars = function () {
-	this.cars.g++;
-};
-
-ServerState.prototype.addACars = function () {
-	this.cars.a++;
-};
-
-ServerState.prototype.decYCars = function () {
-	this.cars.y--;
-};
-
-ServerState.prototype.decGCars = function () {
-	this.cars.g--;
-};
-
-ServerState.prototype.decACars = function () {
-	this.cars.a--;
+ServerState.prototype.removeCar = function () {
+	console.log("Car exited");
+	this.cars--;
 };
 
 ServerState.prototype.getAvailibility = function () {
-	var spaces = {};
-	if (this.info.yCap) {
-		spaces.y = this.info.yCap - this.cars.y;
-	}
-	if (this.ingo.gCap) {
-		spaces.g = this.info.gCap - this.cars.g;
-	}
-	if (this.info.aCap) {
-		spaces.a = this.info.aCap - this.cars.a;
-	}
-	
-	return JSON.stringify(spaces);
+	return this.capacity - this.cars;
 }
 
-ServerState.prototype.getKey = function() {
-	return this.TwitterKey;
+ServerState.prototype.getLocation = function () {
+	return this.location;
 }
 
-ServerState.prototype.getSecret = function() {
-	return this.TwitterSecret;
+ServerState.prototype.getCapacity = function() {
+	return this.capacity;
 }
 
-ServerState.prototype.getBase64Token = function() {
-	return atob(this.TwitterKey + ":" + this.TwitterSecret);
+ServerState.prototype.updateStatus = function () {
+	const availibility = this.capacity - this.cars;
+	const last = this.lastAvailability;
+
+	if (availibility < last - 5
+		|| availibility > last + 5
+		|| (availibility < 1 && last > 0)
+		|| (availibility > 0 && last < 1)) {
+		
+		console.log("\nTweet tweeted\n");
+		this.lastAvailability = availibility;
+			
+		//Send a tweet
+		if (availibility < 1) {
+			var nearest = this.getNearestVacancy();
+			if(nearest)
+				this.Bot.tweet("I'm full! Check @" + nearest + ", it has some open spaces.");
+			else
+				this.Bot.tweet("I'm full! Every lot near here seems to be full as well.");
+		}
+		else {
+			this.Bot.tweet("I have " + availibility + " spots left.");
+		}
+	}
+}
+
+ServerState.prototype.getNearestVacancy = function() {
+	for(var i = 0; i < this.neighbors.length; i++){
+		if(this.neighbors[i].vacancies > 0){
+			return this.neighbors[i].location;
+		}
+	}
+	return null;
 }
 
 ServerState.prototype.mark = function(index, target) {
-	this.rumors[index].sentTo(target);
+	this.myRumor.sentTo(target);
 };
 
-ServerState.prototype.unmark = function(id, number, target) {
-	const that = this;
-	that.rumors.forEach(function(rumor) {
-		if (rumor.getUserId() === id && parseInt(rumor.getNumber()) > number) {
-			rumor.unmark(target);
-		}
-	});
-};
-
-ServerState.prototype.addUserChat = function(id, username, text) {
-	var highest = 0;
-	for (i = 0; i < this.rumors.length; i++) {
-		if (username == this.rumors[i].getOriginator()) {
-			highest = this.rumors[i].getNumber();
-		}
+/* ServerState.prototype.unmark = function(id, number, target) {
+	var rumor = this.myRumor;
+	if (rumor.getUserId() === id && parseInt(rumor.getNumber()) > number) {
+		rumor.unmark(target);
 	}
-	
-	const rumor = new Rumor.make(id,(highest+1),username,text,this.myEndpoint);
-	this.rumors.push(rumor);
+}; */
+
+ServerState.prototype.updateRumor = function(id, username, text) {
+	const cap = "" + this.getCapacity();
+	this.myRumor = new Rumor.make(this.location,0,this.location,cap,this.myEndpoint);
 };
 
 ServerState.prototype.getRumor = function(rumorId, user, text) {
 	//Make sure things parse correctly before doing anything
 	if (rumorId) {
 		var id = rumorId.split(":")[0];
-		var number = rumorId.split(":")[1];
-		if (id && rumorId) {
+		if (id) {
 			var found = false;
-			this.rumors.forEach(function(rumor) {
-				if (rumor.getMessageId() === rumorId) {
+			for (var i = 0; i < this.neighbors.length; i++) {
+				var neighbor = this.rumors[i];
+				if (neighbor.location === id) {
+					this.neighbors[i].vacancies = parseInt(text);
 					found = true;
+					break;
 				}
-			});
+				else continue;
+			}
 			
 			if (!found) {
-				const rumor = new Rumor.make(id,number,user,text,this.myEndpoint);
-				this.rumors.push(rumor);
+				this.neighbors.push({
+					vacancies: parseInt(text),
+					location: id
+				});
 			}
 		}
 	}
@@ -146,50 +144,16 @@ ServerState.prototype.findSendableRumor = function() {
 	
 	that.shuffleEndpoints().forEach(function(endpoint) {
 		if (!result) {
-			for (i=0;i<that.rumors.length;i++) {
-				var rumor = that.rumors[i];
-				if ( !rumor.hasSentTo(endpoint)) {
-					const copiedRumor = rumor.cloneForSending(that.myEndpoint);
-					result = new SendableRumor.make(i,copiedRumor,endpoint);
-					return;
-				}
+			var rumor = that.myRumor;
+			if ( !rumor.hasSentTo(endpoint)) {
+				const copiedRumor = rumor.cloneForSending(that.myEndpoint);
+				result = new SendableRumor.make(i,copiedRumor,endpoint);
+				return;
 			}
 		}
 	});
 
 	return result;
-};
-
-ServerState.prototype.findWants = function() {
-	//Sort all known rumors
-	this.rumors.sort(function(a, b){
-		if (a.getUserId() < b.getUserId()) return -1;
-		else if (a.getUserId() > b.getUserId()) return 1;
-		else if (parseInt(a.getNumber()) < parseInt(b.getNumber())) return -1;
-		else if (parseInt(a.getNumber()) > parseInt(b.getNumber())) return 1;
-		return 0;
-	});
-	
-	//Generate wants
-	var currentUser = "";
-	var wants = {};
-	this.rumors.forEach(function(rumor) {
-		if (rumor.getUserId() !== currentUser) {
-			currentUser = rumor.getUserId();
-			wants[currentUser] = parseInt(rumor.getNumber());
-		}
-		else {
-			const number = parseInt(rumor.getNumber());
-			if (wants[currentUser] < number) wants[currentUser] = number;
-		}
-	});
-	const want = {Want:wants,EndPoint:this.myEndpoint};
-	
-	//Return wants + target
-	return {
-		want: want,
-		target: this.shuffleEndpoints()[0]
-	};
 };
 
 ServerState.prototype.shuffleEndpoints = function() {
