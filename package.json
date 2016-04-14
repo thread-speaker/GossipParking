@@ -21,6 +21,6 @@
     "express": "^4.13.4",
     "external-ip": "^0.2.4",
     "my-local-ip": "^1.0.0",
-    "request": "^2.69.0",
+    "request": "^2.69.0"
   }
 }
